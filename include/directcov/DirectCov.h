@@ -13,7 +13,8 @@ namespace directcov {
 
 class DirectCov {
 public:
-    DirectCov(const std::vector<size_t>& shape) {
+    DirectCov(const std::vector<size_t>& shape, 
+              size_t product_batch) {
         //setup shape and strides
         shape_ = shape;
         N_ = 1;
@@ -45,7 +46,8 @@ public:
 
         //reshape internal matrices 
         cov_.resize(N_, N_);
-        current_event_vec_.resize(N_);
+        product_batch_ = product_batch;
+        current_event_vec_.resize(product_batch_, N_);
 
         //initialize
         this->clear();
@@ -84,8 +86,11 @@ public:
         this->add_(idx_i, idx_j, value);
     }
 
-    void addEvent_(const Eigen::VectorXd& vec){
-        cov_ += vec * vec.transpose();
+    template <typename MATRIX>
+    void addEvent_(const MATRIX& vec){
+        //cov_ += vec * vec.transpose();
+        //cov_.noalias() += vec * vec.transpose();
+        cov_.selfadjointView<Eigen::Lower>().rankUpdate(vec.transpose());
     }
 
     void addEvent(const std::vector<std::vector<size_t>>& indices, 
@@ -103,32 +108,11 @@ public:
         }
         this->addEvent_(vec);
     }
-
-    void fillEvents(const std::vector<std::vector<size_t>>& indices,
-                       const std::vector<double>& values,
-                       const std::vector<size_t>& event_ids){
-        /*
-         * Each event can consist of many columns
-         */
-        for (size_t i = 0; i < indices.size(); ++i) {
-            if (first_event_ || current_event_id_ != event_ids[i]) {
-                if (!first_event_) {
-                    this->addEvent_(current_event_vec_);
-                } else {
-                    first_event_ = false;
-                }
-                current_event_id_ = event_ids[i];
-                new_event();
-            }
-
-            accumulate_event(indices[i], values[i]);
-        }
-    }
     
-    template <typename FLOAT, typename INT>
-    void fillEvents(const py::array_t<INT>& indices_buffer,
+    template <typename FLOAT, typename INT1, typename INT2>
+    void fillEvents(const py::array_t<INT1>& indices_buffer,
                          const py::array_t<FLOAT>& values_buffer,
-                         const py::array_t<INT>& event_ids_buffer) {
+                         const py::array_t<INT2>& event_ids_buffer) {
         py::buffer_info indices_info = indices_buffer.request();
         py::buffer_info values_info = values_buffer.request();
         py::buffer_info event_ids_info = event_ids_buffer.request();
@@ -169,7 +153,7 @@ public:
             for (py::ssize_t d = 0; d < shape_.size(); ++d) {
                 idx += indices(i, d) * strides_[d];
             }
-            current_event_vec_[idx] += values(i);
+            current_event_vec_(current_event_offset_, idx) += values(i);
         }
     }
 
@@ -178,6 +162,8 @@ public:
         current_event_id_ = 0;
         first_event_ = true;
         new_event();
+        //fill in upper triangular part
+        cov_.triangularView<Eigen::StrictlyUpper>() = cov_.transpose().triangularView<Eigen::StrictlyUpper>();
     }
 
     void clear() {
@@ -185,6 +171,7 @@ public:
         current_event_id_ = 0;
         first_event_ = true;
         current_event_vec_.setZero();
+        current_event_offset_ = product_batch_ - 1;
     }
 
     const std::vector<size_t>& shape() const {
@@ -220,25 +207,22 @@ private:
     std::vector<size_t> strides_;
     size_t N_;
     Eigen::MatrixXd cov_;
+    size_t product_batch_;
 
     size_t current_event_id_;
     bool first_event_;
-    Eigen::VectorXd current_event_vec_;
+    Eigen::MatrixXd current_event_vec_;
+    size_t current_event_offset_;
 
     std::vector<size_t> buffer_shape_;
     std::vector<size_t> buffer_strides_;
 
     void new_event(){
         current_event_vec_.setZero();
-    }
-
-    void accumulate_event(const std::vector<size_t>& indices, 
-                          double value) {
-        size_t idx = 0;
-        for (size_t d = 0; d < shape_.size(); ++d) {
-            idx += indices[d] * strides_[d];
+        ++current_event_offset_;
+        if (current_event_offset_ >= product_batch_) {
+            current_event_offset_ = 0;
         }
-        current_event_vec_[idx] += value;
     }
 };
 

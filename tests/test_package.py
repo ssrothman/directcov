@@ -35,7 +35,7 @@ def test():
     event_ids = np.asarray(event_ids, dtype=np.int32)
 
     print("Constructing")
-    cov = m.DirectCov([5, 5])
+    cov = m.DirectCov([5, 5], 10)
     assert cov.shape() == [5,5]
     assert cov.strides() == [5, 1]
     assert cov.size() == 25

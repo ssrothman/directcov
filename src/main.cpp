@@ -29,44 +29,124 @@ PYBIND11_MODULE(_core, m) {
             }
             return get_buffer(dc);
         })
-        .def(py::init<const std::vector<size_t>&>(), "Initialize DirectCov with shape",
-             py::arg("shape"))
-        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int8_t>,
+        .def(py::init<const std::vector<size_t>&, size_t>(), "Initialize DirectCov with shape",
+             py::arg("shape"), py::arg("product_batch"))
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int8_t, int8_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int16_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int16_t, int16_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int32_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int32_t, int32_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int64_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int32_t, int64_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int8_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int64_t, int32_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int16_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int64_t, int64_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int32_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint32_t, int32_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
                 py::arg("event_ids").noconvert())
-        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int64_t>,
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int32_t, uint32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint32_t, uint32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int32_t, uint64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint32_t, int64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint32_t, uint64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint64_t, int32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int64_t, uint32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint64_t, uint32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint64_t, int64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, int64_t, uint64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<double, uint64_t, uint64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int8_t, int8_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int16_t, int16_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int32_t, int32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int64_t, int32_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int32_t, int64_t>,
+                "Add multiple events to the covariance matrix using NumPy arrays",
+                py::arg("indices").noconvert(),
+                py::arg("values").noconvert(), 
+                py::arg("event_ids").noconvert())
+        .def("fillEvents", &directcov::DirectCov::fillEvents<float, int64_t, int64_t>,
                 "Add multiple events to the covariance matrix using NumPy arrays",
                 py::arg("indices").noconvert(),
                 py::arg("values").noconvert(), 
