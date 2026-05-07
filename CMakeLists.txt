@@ -52,7 +52,7 @@ else()
         else()
             target_link_libraries(_core PRIVATE ${BLAS_LIBRARIES})
         endif()
-        set(HAS_FALLBACK_MATH ON)\
+        set(HAS_FALLBACK_MATH ON)
         target_compile_definitions(_core PRIVATE EIGEN_USE_BLAS=1)
         message(STATUS "Using BLAS")
     else()
