@@ -21,9 +21,6 @@ py::buffer_info get_buffer(directcov::DirectCov& dc) {
 PYBIND11_MODULE(_core, m) {
     py::class_<directcov::DirectCov>(m, "DirectCov", py::buffer_protocol())
         .def_buffer([](directcov::DirectCov& dc) -> py::buffer_info {
-            if(!dc.isFinalized()){
-                throw std::runtime_error("DirectCov must be finalized before buffer access");
-            }
             return get_buffer(dc);
         })
         .def("view", [](directcov::DirectCov& dc){
