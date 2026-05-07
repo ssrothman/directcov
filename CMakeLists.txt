@@ -41,7 +41,41 @@ if(MKL_FOUND)
     target_link_libraries(_core PUBLIC $<LINK_ONLY:MKL::MKL>)
     target_compile_definitions(_core PUBLIC EIGEN_USE_MKL_ALL=1) # use all MKL features
 else()
-    message(WARNING "Intel MKL not found. Build will proceed without MKL optimization (slower matrix operations).")
+    message(WARNING "Intel MKL not found. Trying BLAS/LAPACKE.")
+
+    set(HAS_FALLBACK_MATH OFF)
+
+    find_package(BLAS)
+    if(BLAS_FOUND)
+        if(TARGET BLAS::BLAS)
+            target_link_libraries(_core PRIVATE BLAS::BLAS)
+        else()
+            target_link_libraries(_core PRIVATE ${BLAS_LIBRARIES})
+        endif()
+        set(HAS_FALLBACK_MATH ON)\
+        target_compile_definitions(_core PRIVATE EIGEN_USE_BLAS=1)
+        message(STATUS "Using BLAS")
+    else()
+        message(WARNING "BLAS not found.")
+    endif()
+
+    find_path(LAPACKE_INCLUDE_DIR NAMES lapacke.h)
+    find_library(LAPACKE_LIBRARY NAMES lapacke)
+    if(LAPACKE_LIBRARY)
+        target_link_libraries(_core PRIVATE ${LAPACKE_LIBRARY})
+        if(LAPACKE_INCLUDE_DIR)
+            target_include_directories(_core PRIVATE ${LAPACKE_INCLUDE_DIR})
+        endif()
+        target_compile_definitions(_core PRIVATE EIGEN_USE_LAPACKE=1)
+        set(HAS_FALLBACK_MATH ON)
+        message(STATUS "Using LAPACKE")
+    else()
+        message(WARNING "LAPACKE not found.")
+    endif()
+
+    if(NOT HAS_FALLBACK_MATH)
+        message(WARNING "No MKL/BLAS/LAPACKE backend found. Build will proceed with Eigen defaults; performance may be reduced.")
+    endif()
 endif()
 
 # specify max compiler optimizations
