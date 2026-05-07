@@ -15,6 +15,14 @@ class DirectCov {
 public:
     DirectCov(const std::vector<size_t>& shape, 
               size_t product_batch) {
+        // Validate inputs
+        if (shape.empty()) {
+            throw std::invalid_argument("shape cannot be empty");
+        }
+        if (product_batch == 0) {
+            throw std::invalid_argument("product_batch must be greater than 0");
+        }
+        
         //setup shape and strides
         shape_ = shape;
         N_ = 1;
@@ -63,9 +71,18 @@ public:
     }
 
     const double& at(const std::vector<size_t>& indices_i, const std::vector<size_t>& indices_j) const {
+        if (indices_i.size() != shape_.size() || indices_j.size() != shape_.size()) {
+            throw std::out_of_range("Index vector size mismatch with shape");
+        }
         size_t idx_i = 0;
         size_t idx_j = 0;
         for (size_t d = 0; d < shape_.size(); ++d) {
+            if (indices_i[d] >= shape_[d]) {
+                throw std::out_of_range("indices_i out of bounds at dimension " + std::to_string(d));
+            }
+            if (indices_j[d] >= shape_[d]) {
+                throw std::out_of_range("indices_j out of bounds at dimension " + std::to_string(d));
+            }
             idx_i += indices_i[d] * strides_[d];
             idx_j += indices_j[d] * strides_[d];
         }
@@ -77,9 +94,18 @@ public:
     }
 
     void add(const std::vector<size_t>& indices_i, const std::vector<size_t>& indices_j, double value) {
+        if (indices_i.size() != shape_.size() || indices_j.size() != shape_.size()) {
+            throw std::out_of_range("Index vector size mismatch with shape");
+        }
         size_t idx_i = 0;
         size_t idx_j = 0;
         for (size_t d = 0; d < shape_.size(); ++d) {
+            if (indices_i[d] >= shape_[d]) {
+                throw std::out_of_range("indices_i out of bounds at dimension " + std::to_string(d));
+            }
+            if (indices_j[d] >= shape_[d]) {
+                throw std::out_of_range("indices_j out of bounds at dimension " + std::to_string(d));
+            }
             idx_i += indices_i[d] * strides_[d];
             idx_j += indices_j[d] * strides_[d];
         }
@@ -102,7 +128,13 @@ public:
         for (size_t i = 0; i < indices.size(); ++i) {
             size_t idx = 0;
             for (size_t d = 0; d < shape_.size(); ++d) {
+                if (indices[i][d] >= shape_[d]) {
+                    throw std::out_of_range("Index out of bounds for dimension " + std::to_string(d));
+                }
                 idx += indices[i][d] * strides_[d];
+            }
+            if (idx >= N_) {
+                throw std::out_of_range("Computed flat index out of bounds");
             }
             vec[idx] += values[i];
         }
@@ -151,7 +183,17 @@ public:
             
             py::ssize_t idx = 0;
             for (py::ssize_t d = 0; d < shape_.size(); ++d) {
+                if (indices(i, d) >= shape_[d]) {
+                    throw std::out_of_range("Indices out of bounds at row " + std::to_string(i) + 
+                                          ", dimension " + std::to_string(d) + ": " + 
+                                          std::to_string(indices(i, d)) + " >= " + std::to_string(shape_[d]));
+                }
                 idx += indices(i, d) * strides_[d];
+            }
+            if (idx >= N_ || current_event_offset_ >= product_batch_) {
+                throw std::out_of_range("Matrix index out of bounds. idx=" + std::to_string(idx) + 
+                                      " >= N_=" + std::to_string(N_) + ", or offset=" + 
+                                      std::to_string(current_event_offset_) + " >= batch=" + std::to_string(product_batch_));
             }
             current_event_vec_(current_event_offset_, idx) += values(i);
         }
